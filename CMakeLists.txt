@@ -27,6 +27,6 @@ set_target_properties(mydaemon PROPERTIES
 
 #install(TARGETS mydaemon DESTINATION /usr/local/bin)
 
-message(STATUS "📦 Source files: ${SRC_FILES}")
-message(STATUS "✅ Output binary: ${CMAKE_BINARY_DIR}/mydaemon")
+message(STATUS "Source files: ${SRC_FILES}")
+message(STATUS "Output binary: ${CMAKE_BINARY_DIR}/mydaemon")
 
