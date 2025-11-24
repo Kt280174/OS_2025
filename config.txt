@@ -1,4 +1,0 @@
-interval=60
-pid_file=/tmp/mydaemon.pid
-/tmp/source1   /tmp/target1   .txt   TEXTS
-/tmp/source2   /tmp/target2   .txt   TEXTS

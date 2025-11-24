@@ -1,32 +1,62 @@
-﻿# CMakeList.txt : CMake project for daemon, include source and define
-# project specific logic here.
-#
-cmake_minimum_required (VERSION 3.8)
+﻿cmake_minimum_required(VERSION 3.10)
+project(Connections)
 
-# Enable Hot Reload for MSVC compilers if supported.
-if (POLICY CMP0141)
-  cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
-endif()
-
-project ("daemon"LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# Add source to this project's executable.
-add_compile_options(-Wall -Werror -O2)
 
-file(GLOB SRC_FILES
-    "${CMAKE_SOURCE_DIR}/src/*.cpp"
+# Thêm warning
+add_compile_options(-Wall -Werror)
+
+# Các thư mục nguồn
+set(CLIENT_SRC client)
+set(HOST_SRC host)
+set(CONNECTION Conn)
+set(MODEL Config)
+
+# Include
+include_directories(
+    ${CONNECTION}
+    ${MODEL}
 )
 
-add_executable(mydaemon ${SRC_FILES})
+find_package(Threads)
+find_library(LIBRT rt)
 
-set_target_properties(mydaemon PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-)
+# Lấy danh sách các backend IPC
+file(GLOB CONN_FILES ./conn/conn_*.cpp)
 
-#install(TARGETS mydaemon DESTINATION /usr/local/bin)
+foreach(CONN_FILE ${CONN_FILES})
+    get_filename_component(FILE_NAME ${CONN_FILE} NAME_WLE)
+    string(REGEX REPLACE "conn_" "" CONN ${FILE_NAME})
 
-message(STATUS "Source files: ${SRC_FILES}")
-message(STATUS "Output binary: ${CMAKE_BINARY_DIR}/mydaemon")
+    # ----------------
+    # HOST (console)
+    # ----------------
+    add_executable(host_${CONN}
+        ${HOST_SRC}/host.cpp     # main console
+        ${HOST_SRC}/wolf_server.cpp
+        ${HOST_SRC}/wolf_server.h
+        ${MODEL}/game_config.h
+        ${MODEL}/semaphores_manager.h
+        ${CONNECTION}/conn.h
+        ${CONNECTION}/conn_${CONN}.cpp
+    )
 
+    target_link_libraries(host_${CONN} pthread rt)
+
+    # ----------------
+    # CLIENT (console)
+    # ----------------
+    add_executable(client_${CONN}
+        ${CLIENT_SRC}/client.cpp
+        ${CLIENT_SRC}/goat_client.cpp
+        ${CLIENT_SRC}/goat_client.h
+        ${MODEL}/game_config.h
+        ${MODEL}/semaphores_manager.h
+        ${CONNECTION}/conn.h
+        ${CONNECTION}/conn_${CONN}.cpp
+    )
+
+    target_link_libraries(client_${CONN} pthread rt)
+
+endforeach()
