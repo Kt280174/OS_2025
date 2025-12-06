@@ -45,7 +45,9 @@ void Daemon::daemonize() {
 
 
     long maxfd = sysconf(_SC_OPEN_MAX);
-    if (maxfd < 0) maxfd = 1024;
+    if (maxfd < 0) {
+        maxfd = 1024;
+    }
     for (long fd = 0; fd < maxfd; ++fd) close(static_cast<int>(fd));
 
     int fd0 = open("/dev/null", O_RDWR);
